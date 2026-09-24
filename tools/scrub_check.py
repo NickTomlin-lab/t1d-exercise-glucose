@@ -34,7 +34,7 @@ TIME_RX = re.compile(r"\b\d{1,2}:\d{2}\b")
 SID_RX = re.compile(r"\bS\d{3}(?:c\d)?\b")
 WEEKDAY_RX = re.compile(r"\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?:day|sday|nesday|rsday|urday)?\b")
 GENERIC = [
-    ("absolute path", re.compile(r"[A-Za-z]:\\|[A-Za-z]:/|/[a-z]/My Drive|My Drive|/Users/|\\Users\\|AppData|/home/[a-z]", re.I)),
+    ("absolute path", re.compile(r"\b[A-Za-z]:\\|\b[A-Za-z]:/|/[a-z]/My Drive|My Drive|/Users/|\\Users\\|AppData|/home/[a-z]", re.I)),
     ("windows path fragment", re.compile(r"[A-Za-z][A-Za-z0-9 ]*\\[A-Za-z][A-Za-z0-9 ]*\\[A-Za-z]")),
     # any email address except a noreply address (git commits carry one by necessity)
     ("email", re.compile(r"(?<![A-Za-z0-9._%+-])(?!noreply@)[A-Za-z0-9._%+-]+@(?!users\.noreply\.github\.com)[A-Za-z0-9.-]+\.[A-Za-z]{2,}")),

@@ -2,7 +2,7 @@
 
 A month-by-month narrative of what was found, in the order the work was done. Every number comes from the printed reports in `results/reports/`. No session dates or times appear here. Glucose in mmol/L throughout. Analysis only; nothing here informs a dosing decision.
 
-## September 2026, first week: the 5-minute forecaster
+## September 2026, part 1: the 5-minute forecaster
 
 **Discovery and alignment.** The four exports were parsed, cross-checked and aligned on a 5-minute grid (see `docs/data_sources.md`). The train/test split was fixed before any model was scored: the last three weeks of the second data window are the test set, everything earlier is training. The split has not moved since.
 
@@ -14,7 +14,7 @@ A month-by-month narrative of what was found, in the order the work was done. Ev
 
 **Does exercise information help the forecaster?** Ablations on validation and in rolling-origin cross-validation showed small gains from exercise and movement features concentrated in the hours after a workout, not overall. That question was then moved to the session level, where it can be asked directly.
 
-## September 2026, third week: sessions, controls and the first models
+## September 2026, part 2: sessions, controls and the first models
 
 **Prompt 01, the session table.** One row per exercise session (gym, cricket, football) from the watch's workouts, with glucose, insulin, food and pump state at the start and low outcomes during the session and in the two hours after. Sessions include a low; they do not necessarily end because of one.
 

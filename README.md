@@ -1,6 +1,6 @@
 # Exercise-related hypoglycaemia on a hybrid closed loop
 
-The author's own type 1 diabetes data (Omnipod 5 pump, Dexcom G6 then G7 sensor, Apple Watch), December 2025 to July 2026, used to ask three questions: how much an exercise session raises the odds of a low compared with the same clock time on a rest day, how long before the pump reacts the body has already signalled exercise, and how much warning a 30-minute low alert built on the same data can give. The data are the author's, the code was written and run with AI tools from prompts the author wrote, and every number here is checked against the printed reports in `results/reports/`.
+The author's own type 1 diabetes data (Omnipod 5 pump, Dexcom G6, then G7 from spring 2026, Apple Watch), about eight months across the winter and summer of 2025-26, used to ask three questions: how much an exercise session raises the odds of a low compared with the same clock time on a rest day, how long before the pump reacts the body has already signalled exercise, and how much warning a 30-minute low alert built on the same data can give. The data are the author's, the code was written and run with AI tools from prompts the author wrote, and every number here is checked against the printed reports in `results/reports/`.
 
 ## Safety statement
 
@@ -16,7 +16,7 @@ Four streams, aligned on one 5-minute grid: sensor glucose (the union of two exp
 
 Published here: the session table and its matched control windows with random identifiers and no dates or times (`results/sessions_public.csv`, `results/controls_public.csv`, `results/pooled_windows_public.csv`), sanitised copies of the printed reports (`results/reports/`), five figures (`results/figures/`), the rule-by-horizon and lead-time summary tables, and a synthetic 14-day sample (`data/synthetic/`).
 
-Not published: the raw exports, the 5-minute table, the event log, any date or clock time, anything recorded after July 2026 (a quarantined block that no script has read for a result), and the private settings file that holds the real window boundaries and the author's own workout-relabel rule. Exact reproduction of the 5-minute forecaster numbers needs the private data; the code and the published session table reproduce the session-level results exactly (`python src/fit_session_models.py --sessions results/sessions_public.csv --controls results/controls_public.csv`).
+Not published: the raw exports, the 5-minute table, the event log, any date or clock time, anything recorded after the exploration period (a quarantined block that no script has read for a result), and the private settings file that holds the real window boundaries and the author's own workout-relabel rule. Exact reproduction of the 5-minute forecaster numbers needs the private data; the code and the published session table reproduce the session-level results exactly (`python src/fit_session_models.py --sessions results/sessions_public.csv --controls results/controls_public.csv`).
 
 **The synthetic sample is synthetic.** `data/synthetic/aligned_5min_synthetic.csv` is drawn from aggregate statistics of the real training rows (`data/synthetic/summary_stats.json`) with workout start times drawn at random between 07:00 and 21:00, placeholder dates in the year 2000 and `synthetic = 1` on every row. It exists so the pipeline can be run; the published results come from the real data, not from it.
 
@@ -61,9 +61,9 @@ All numbers are from `results/reports/`; n is given with each.
 
 ## What is next
 
-Two frozen models: v1 with the inputs used here and v2 with the logged inputs added, both trained on the same data up to 31 December 2026 and scored once on January to March 2027 against the same baselines, with the predictions written down before the scoring run.
+Two frozen models: v1 with the inputs used here and v2 with the logged inputs added, both trained on the same data up to the end of 2026 and scored once on the first quarter of 2027 against the same baselines, with the predictions written down before the scoring run.
 
-Under the freeze plan the block recorded after July 2026 stops being quarantined on 31 December 2026, when it becomes training data for v1 and v2. This repository will be updated once after the scoring run in April 2027.
+Under the freeze plan the block recorded after the exploration period stops being quarantined at the end of 2026, when it becomes training data for v1 and v2. This repository will be updated once after the scoring run in spring 2027.
 
 ## How AI tools were used
 
@@ -86,9 +86,9 @@ To run on your own data, point `T1D_DATA_DIR` (or `--data-dir`) at a private fol
 
 ## References
 
-- Cuya, C. (2025). 1st place solution: single LightGBM model. BrisT1D Blood Glucose Prediction Competition, Kaggle.
-- James, S. et al. (2025). The BrisT1D dataset. [complete from the author's reference index]
-- Martinsson, J., Schliep, A., Eliasson, B. and Mogren, O. (2020). Blood glucose prediction with variance estimation using recurrent neural networks. Journal of Healthcare Informatics Research, 4, 1-18.
+- Cuya, S. (2025) '1st place solution - single LGBM model', BrisT1D Blood Glucose Prediction Competition, Kaggle. Available at: https://www.kaggle.com/competitions/brist1d/writeups/sebastian-cuya-1st-place-solution-single-lgbm-mode
+- James, S.G., Armstrong, M.E.G., O'Kane, A.A., Emerson, H. and Abdallah, Z.S. (2025) 'BrisT1D dataset: young adults with type 1 diabetes in the UK using smartwatches', arXiv:2507.17757. Available at: https://doi.org/10.48550/arXiv.2507.17757
+- Martinsson, J., Schliep, A., Eliasson, B. and Mogren, O. (2020) 'Blood glucose prediction with variance estimation using recurrent neural networks', Journal of Healthcare Informatics Research, 4, pp. 1-18.
 
 ## Licence
 

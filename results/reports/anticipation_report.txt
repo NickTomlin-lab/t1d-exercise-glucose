@@ -1,0 +1,244 @@
+Sanitised copy: dates, clock times, session ids, weekday names and file paths replaced by [date], [time], [id], [weekday], [path]; the per-session table and the weekday breakdown of false alarms are withheld.
+
+Analysis only: nothing here informs a dosing decision. Glucose in mmol/L.
+Rules only, thresholds fixed as written in prompt 06; no model is fitted; no prospective row is read.
+
+==============================================================================
+0. Universe
+==============================================================================
+grid: 39837 candidate decision rows on 207 dates (29.6 weeks), [date] to [date], clock [time]-[time], outside sessions and their 2 h after
+  rows in clock range before exclusion: 44712; excluded as in/after a session: 4875
+explore sessions in sessions.csv: 118 (all categories, any usable); usable with start >= [date]: 110 = positives
+
+usable sessions (positives) by cat2 and aerobic:
+aerobic           0   1  All
+cat2                        
+cricket_indoor    0  15   15
+cricket_outdoor   0  15   15
+football          0  10   10
+gym              70   0   70
+All              70  40  110
+
+explore sessions NOT usable (still define labels, exclusion and routine history): 8
+session_id    cat2               start  duration_min  outcome_missing_frac         flag_reason
+      [id]     gym [date]          10.0              0.000000           too_short
+      [id]     gym [date]          10.0              0.000000           too_short
+      [id]     gym [date]          10.0              0.000000           too_short
+      [id] cycling [date]         190.0              0.596774 real_gap+pod_change
+      [id]     gym [date]          70.0              0.000000            real_gap
+      [id]     gym [date]          90.0              1.000000                 NaN
+      [id]     gym [date]          60.0              0.194444            real_gap
+      [id]     gym [date]         130.0              0.600000                 NaN
+
+label prevalence (share of grid rows with a session start within H):
+  H = 30: 0.0172  (684 rows)
+  H = 60: 0.0342  (1364 rows)
+  H = 90: 0.0511  (2037 rows)
+  H = 30: usable sessions with fewer than 6 grid rows in [start - H, start): 3 of 110 (min 0)
+  H = 60: usable sessions with fewer than 12 grid rows in [start - H, start): 4 of 110 (min 0)
+  H = 90: usable sessions with fewer than 18 grid rows in [start - H, start): 7 of 110 (min 0)
+
+R2 HR baseline source by date: own 134, 7day 66, none 24
+R2 firing share of grid rows: steps 0.076, HR 0.152, either 0.183; HR present (hr10) on 0.750 of rows
+gate (insulin_total_4h >= 5 U) true on 0.598 of grid rows
+R1 firing share of grid rows at H = 30: 0.013
+R1 firing share of grid rows at H = 60: 0.021
+R1 firing share of grid rows at H = 90: 0.028
+
+==============================================================================
+1. H = 30 min: all usable explore sessions (n = 110)
+==============================================================================
+                          n caught share   aer0   aer1    gym cricket_indoor cricket_outdoor football lead_med lead_q1 lead_q3 leadrun_med fire_rows/wk FA_rows/wk FA_episodes/wk FA_episodes
+R1 routine              110     12  0.11   1/70  11/40   1/70           4/15            0/15     7/10    30.00   30.00   30.00       30.00        18.16      15.76           1.29          38
+R2 movement             110    106  0.96  67/70  39/40  67/70          15/15           14/15    10/10    25.00   15.00   30.00       25.00       247.16     232.39          52.25        1545
+R3 routine or movement  110    106  0.96  67/70  39/40  67/70          15/15           14/15    10/10    30.00   15.00   30.00       30.00       260.49     244.83          52.48        1552
+gate alone (ref)        110     47  0.43  16/70  31/40  16/70          10/15           12/15     9/10    30.00   30.00   30.00      170.00       805.95     796.68          12.85         380
+R1 and gate             110      9  0.08   0/70   9/40   0/70           3/15            0/15     6/10    30.00   30.00   30.00       30.00        12.38      10.55           0.95          28
+R2 and gate             110     47  0.43  16/70  31/40  16/70          10/15           12/15     9/10    30.00   17.50   30.00       30.00       198.13     191.54          43.25        1279
+R3 and gate             110     47  0.43  16/70  31/40  16/70          10/15           12/15     9/10    30.00   22.50   30.00       30.00       206.35     199.04          43.25        1279
+
+  caught: rule fired at any grid row in the H min before start; aerN and cat2 columns = caught/n;
+  lead = start minus first firing row in that window (min, caught sessions; capped at H by construction);
+  leadrun_med = start minus the first row of the whole consecutive firing run (how early the alert really came up);
+  FA = fired, no session within H;
+  FA episodes = runs of consecutive firing rows with no label-1 row; per week = per 7 grid dates
+
+==============================================================================
+2. H = 30 min: sessions that included a low (low_any == 1, n = 44)
+==============================================================================
+                         n caught share   aer0   aer1    gym cricket_indoor cricket_outdoor football lead_med lead_q1 lead_q3 leadrun_med
+R1 routine              44      6  0.14   0/24   6/20   0/24            2/8             0/6      4/6    30.00   30.00   30.00       30.00
+R2 movement             44     43  0.98  24/24  19/20  24/24            8/8             5/6      6/6    25.00   17.50   30.00       25.00
+R3 routine or movement  44     43  0.98  24/24  19/20  24/24            8/8             5/6      6/6    30.00   20.00   30.00       30.00
+gate alone (ref)        44     28  0.64  11/24  17/20  11/24            6/8             5/6      6/6    30.00   30.00   30.00      207.50
+R1 and gate             44      6  0.14   0/24   6/20   0/24            2/8             0/6      4/6    30.00   30.00   30.00       30.00
+R2 and gate             44     28  0.64  11/24  17/20  11/24            6/8             5/6      6/6    30.00   18.75   30.00       30.00
+R3 and gate             44     28  0.64  11/24  17/20  11/24            6/8             5/6      6/6    30.00   23.75   30.00       30.00
+  (false-alarm columns are unchanged from table 1: they do not depend on which sessions are counted)
+
+==============================================================================
+1. H = 60 min: all usable explore sessions (n = 110)
+==============================================================================
+                          n caught share   aer0   aer1    gym cricket_indoor cricket_outdoor football lead_med lead_q1 lead_q3 leadrun_med fire_rows/wk FA_rows/wk FA_episodes/wk FA_episodes
+R1 routine              110     13  0.12   1/70  12/40   1/70           5/15            0/15     7/10    60.00   60.00   60.00       60.00        28.30      23.40           1.25          37
+R2 movement             110    106  0.96  67/70  39/40  67/70          15/15           14/15    10/10    32.50   15.00   55.00       32.50       247.16     226.00          51.13        1512
+R3 routine or movement  110    106  0.96  67/70  39/40  67/70          15/15           14/15    10/10    40.00   20.00   60.00       40.00       268.60     244.76          51.00        1508
+gate alone (ref)        110     49  0.45  16/70  33/40  16/70          11/15           12/15    10/10    60.00   60.00   60.00      195.00       805.95     787.86          12.75         377
+R1 and gate             110     11  0.10   0/70  11/40   0/70           4/15            0/15     7/10    60.00   60.00   60.00       60.00        19.34      15.45           0.91          27
+R2 and gate             110     48  0.44  16/70  32/40  16/70          11/15           12/15     9/10    40.00   25.00   60.00       40.00       198.13     188.05          42.74        1264
+R3 and gate             110     49  0.45  16/70  33/40  16/70          11/15           12/15    10/10    55.00   30.00   60.00       55.00       211.72     199.35          42.41        1254
+
+  caught: rule fired at any grid row in the H min before start; aerN and cat2 columns = caught/n;
+  lead = start minus first firing row in that window (min, caught sessions; capped at H by construction);
+  leadrun_med = start minus the first row of the whole consecutive firing run (how early the alert really came up);
+  FA = fired, no session within H;
+  FA episodes = runs of consecutive firing rows with no label-1 row; per week = per 7 grid dates
+
+==============================================================================
+2. H = 60 min: sessions that included a low (low_any == 1, n = 44)
+==============================================================================
+                         n caught share   aer0   aer1    gym cricket_indoor cricket_outdoor football lead_med lead_q1 lead_q3 leadrun_med
+R1 routine              44      7  0.16   0/24   7/20   0/24            3/8             0/6      4/6    60.00   60.00   60.00       60.00
+R2 movement             44     43  0.98  24/24  19/20  24/24            8/8             5/6      6/6    30.00   22.50   52.50       30.00
+R3 routine or movement  44     43  0.98  24/24  19/20  24/24            8/8             5/6      6/6    40.00   25.00   60.00       40.00
+gate alone (ref)        44     29  0.66  11/24  18/20  11/24            7/8             5/6      6/6    60.00   60.00   60.00      215.00
+R1 and gate             44      7  0.16   0/24   7/20   0/24            3/8             0/6      4/6    60.00   60.00   60.00       60.00
+R2 and gate             44     29  0.66  11/24  18/20  11/24            7/8             5/6      6/6    30.00   20.00   45.00       30.00
+R3 and gate             44     29  0.66  11/24  18/20  11/24            7/8             5/6      6/6    40.00   30.00   60.00       40.00
+  (false-alarm columns are unchanged from table 1: they do not depend on which sessions are counted)
+
+==============================================================================
+1. H = 90 min: all usable explore sessions (n = 110)
+==============================================================================
+                          n caught share   aer0   aer1    gym cricket_indoor cricket_outdoor football lead_med lead_q1 lead_q3 leadrun_med fire_rows/wk FA_rows/wk FA_episodes/wk FA_episodes
+R1 routine              110     15  0.14   3/70  12/40   3/70           5/15            0/15     7/10    90.00   90.00   90.00       90.00        37.98      30.16           1.22          36
+R2 movement             110    106  0.96  67/70  39/40  67/70          15/15           14/15    10/10    40.00   20.00   75.00       40.00       247.16     222.04          50.22        1485
+R3 routine or movement  110    106  0.96  67/70  39/40  67/70          15/15           14/15    10/10    55.00   25.00   88.75       55.00       276.35     246.15          49.74        1471
+gate alone (ref)        110     53  0.48  18/70  35/40  18/70          12/15           13/15    10/10    90.00   90.00   90.00      200.00       805.95     778.72          12.55         371
+R1 and gate             110     12  0.11   1/70  11/40   1/70           4/15            0/15     7/10    90.00   90.00   90.00       90.00        25.46      19.21           0.91          27
+R2 and gate             110     50  0.45  16/70  34/40  16/70          12/15           13/15     9/10    50.00   26.25   88.75       50.00       198.13     185.52          42.17        1247
+R3 and gate             110     51  0.46  16/70  35/40  16/70          12/15           13/15    10/10    75.00   30.00   90.00       75.00       216.39     199.58          41.70        1233
+
+  caught: rule fired at any grid row in the H min before start; aerN and cat2 columns = caught/n;
+  lead = start minus first firing row in that window (min, caught sessions; capped at H by construction);
+  leadrun_med = start minus the first row of the whole consecutive firing run (how early the alert really came up);
+  FA = fired, no session within H;
+  FA episodes = runs of consecutive firing rows with no label-1 row; per week = per 7 grid dates
+
+==============================================================================
+2. H = 90 min: sessions that included a low (low_any == 1, n = 44)
+==============================================================================
+                         n caught share   aer0   aer1    gym cricket_indoor cricket_outdoor football lead_med lead_q1 lead_q3 leadrun_med
+R1 routine              44      9  0.20   2/24   7/20   2/24            3/8             0/6      4/6    90.00   90.00   90.00       90.00
+R2 movement             44     43  0.98  24/24  19/20  24/24            8/8             5/6      6/6    40.00   25.00   67.50       40.00
+R3 routine or movement  44     43  0.98  24/24  19/20  24/24            8/8             5/6      6/6    55.00   27.50   87.50       55.00
+gate alone (ref)        44     31  0.70  12/24  19/20  12/24            8/8             5/6      6/6    90.00   90.00   90.00      215.00
+R1 and gate             44      8  0.18   1/24   7/20   1/24            3/8             0/6      4/6    90.00   90.00   90.00       90.00
+R2 and gate             44     30  0.68  11/24  19/20  11/24            8/8             5/6      6/6    35.00   21.25   76.25       35.00
+R3 and gate             44     30  0.68  11/24  19/20  11/24            8/8             5/6      6/6    50.00   30.00   90.00       50.00
+  (false-alarm columns are unchanged from table 1: they do not depend on which sessions are counted)
+
+==============================================================================
+3. Cost framing: R1 routine at H = 60
+==============================================================================
+
+R1 routine: caught 13 of 110; lead before the true start (first firing row within the 60 min) median 60 min, Q1 60, Q3 60, min 55, max 60
+  lead counted from the first row of the firing run: median 60 min, Q1 60, Q3 70, min 55, max 140
+  false-alarm episodes: 37 in 29.6 weeks (1.25/wk); on usual training times: 15, other times: 22
+  episode length (min): median 90, max 90
+(block withheld: it carries clock times or weekdays)
+
+R1 and gate: caught 11 of 110; lead before the true start (first firing row within the 60 min) median 60 min, Q1 60, Q3 60, min 60, max 60
+  lead counted from the first row of the firing run: median 60 min, Q1 60, Q3 68, min 60, max 140
+  false-alarm episodes: 27 in 29.6 weeks (0.91/wk); on usual training times: 15, other times: 12
+  episode length (min): median 90, max 90
+(block withheld: it carries clock times or weekdays)
+
+(block withheld: it carries clock times or weekdays)
+
+==============================================================================
+4. Lead before the true start by rule and horizon (caught sessions; median [Q1, Q3] min)
+==============================================================================
+                           caught  lead_med  lead_q1  lead_q3  leadrun_med  leadrun_q1  leadrun_q3  run_ge30  run_ge60
+30 R1 routine               12.00     30.00    30.00    30.00        30.00       30.00       36.25     11.00      0.00
+   R2 movement             106.00     25.00    15.00    30.00        25.00       15.00       40.00     48.00      9.00
+   R3 routine or movement  106.00     30.00    15.00    30.00        30.00       15.00       40.00     55.00     11.00
+60 R1 routine               13.00     60.00    60.00    60.00        60.00       60.00       70.00     13.00     12.00
+   R2 movement             106.00     32.50    15.00    55.00        32.50       15.00       55.00     68.00     22.00
+   R3 routine or movement  106.00     40.00    20.00    60.00        40.00       20.00       60.00     73.00     32.00
+90 R1 routine               15.00     90.00    90.00    90.00        90.00       90.00      100.00     14.00     14.00
+   R2 movement             106.00     40.00    20.00    75.00        40.00       20.00       75.00     73.00     40.00
+   R3 routine or movement  106.00     55.00    25.00    88.75        55.00       25.00       88.75     78.00     49.00
+  lead_* = first firing row within [start - H, start) (capped at H); leadrun_* = first row of that firing run;
+  run_ge30 / run_ge60 = caught sessions whose firing run began at least 30 / 60 min before start
+  (a caught count rises with H by construction; a rule that only fires once the person is moving shows in a short lead)
+
+==============================================================================
+5. Per-session sanity table (usable explore sessions; caught / lead columns at H = 60)
+==============================================================================
+example rows withheld (they carry timestamps)
+
+==============================================================================
+Assumptions made where prompt 06 did not settle the point
+==============================================================================
+
+ 1. Grid clock range is [[time], [time]): the [time] row is excluded. Rows are the
+    aligned 5-min rows that exist (none in the [date] gap).
+ 2. 'Inside a session or within 2 h after one' uses EVERY explore session in
+    sessions.csv, usable or not, any category: rows in [start, end + 2 h].
+ 3. Label(t, H) = 1 if any explore session (usable or not) starts in (t, t + H],
+    a start exactly H min ahead included. 'Sessions caught' counts usable
+    sessions only; a firing before an unusable session is not a false alarm.
+ 4. Caught = fired at any GRID row in [start - H, start). Rows before [time] or
+    inside the 2 h after an earlier session are not in the grid, so a session
+    there has fewer chances; the count of such sessions is printed in part 0.
+ 5. R1 is horizon-dependent: at t the candidate 30-min clock slots are those
+    overlapping (t, t + H] (fixed bins :00 and :30, clipped to the same day);
+    the rule fires if any candidate slot had a same-weekday start on >= 2 of
+    the previous 4 weeks. History = all explore sessions in sessions.csv
+    (including the short window-0 gym entries), by exact start slot, so a
+    start at [time] one week and [time] the next fall in different slots.
+    Weeks before the data (first 4 weeks) and weeks in the April gap count 0.
+ 6. R2 'last 15 min' = rows t - 10, t - 5, t (the row t covers [t, t + 5));
+    'last 10 min' = mean hr_mean over rows t - 5 and t with missing rows
+    skipped; no HR in either row -> the HR part cannot fire. Baseline uses
+    rows [time]-[time] of the same calendar day (so rows [time]-[time] see a
+    baseline that includes readings up to [time]); fallback = median of the
+    previous 7 calendar days' own baselines; if none, the HR part cannot fire.
+ 7. Gate = bolus_u + est_basal_u summed over rows [t - 4 h, t) (48 rows, the
+    start row excluded, as in compute_features); partial after the April gap
+    and at [time] on [date] only as far as rows exist; NaN est_basal_u = 0.
+ 8. False-alarm rows = fired and label 0. False-alarm episodes = maximal runs
+    of consecutive firing grid rows (exactly 5 min apart; an excluded row or
+    the [time] -> [time] break ends a run) in which no row has label 1. A run
+    that starts early and ends inside the horizon of a real session is not a
+    false alarm even though its first rows have label 0.
+ 9. Weeks = distinct grid dates / 7 (207 dates = 29.6 weeks); the April
+    gap is not counted as time.
+10. Two leads. lead = start minus the FIRST firing grid row in [start - H,
+    start), capped at H by construction (R1 fires continuously, so it sits at
+    H). leadrun = start minus the first row of the consecutive firing run that
+    contains that row, i.e. when the alert actually came up; for R1 at
+    horizon H this is bounded by H + 30 (slot width) unless a neighbouring
+    slot also qualifies.
+11. 'Usual training days' come from the private settings (usual_training_times:
+    weekday, time of day and season per slot; withheld here); an episode is
+    placed by its first row.
+12. The one cycling session ([date]) is unusable (real gap inside its span), so
+    cycling appears in the history, labels and exclusion but not as a positive;
+    the cycling column is therefore absent from the caught tables.
+13. 'gate alone (ref)' is printed for reference only: it is not one of the
+    three rules and it is not a prediction of exercise.
+
+
+==============================================================================
+Plain sentences (R1 routine, no gate)
+==============================================================================
+A routine-only rule would have flagged 11% of sessions half an hour ahead, at 1.3 false-alarm episodes per week.
+A routine-only rule would have flagged 12% of sessions an hour ahead, at 1.3 false-alarm episodes per week.
+A routine-only rule would have flagged 14% of sessions an hour and a half ahead, at 1.2 false-alarm episodes per week.
+
+same, sessions that included a low:
+A routine-only rule would have flagged 14% of the sessions that included a low half an hour ahead, at 1.3 false-alarm episodes per week.
+A routine-only rule would have flagged 16% of the sessions that included a low an hour ahead, at 1.3 false-alarm episodes per week.
+A routine-only rule would have flagged 20% of the sessions that included a low an hour and a half ahead, at 1.2 false-alarm episodes per week.

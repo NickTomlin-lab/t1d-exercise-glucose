@@ -1,0 +1,16 @@
+# private data never enters the repository
+data/real/
+RAW Data/
+processed/
+*.zip
+*.xml
+.env
+settings.json
+overrides.csv
+!data/overrides_example.csv
+!data/settings_example.json
+
+# python
+__pycache__/
+*.pyc
+.pytest_cache/

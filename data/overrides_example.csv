@@ -1,0 +1,21 @@
+# overrides_example.csv - the dated corrections that the pipeline applies, with
+# PLACEHOLDER dates in the year 2000. The real file (real dates, from the
+# author's memory of specific days) lives outside this repository and is pointed
+# at by "overrides_csv" in the private settings.json. Lines starting with # are
+# comments. Columns: kind,start,end,new_cat2,new_duration_min,note
+#
+# kind = session_override : a formed session whose start matches `start` gets
+#        cat2 := new_cat2, duration := new_duration_min (end recomputed), and
+#        every feature and outcome is recomputed (build_sessions.py).
+# kind = workout_relabel  : a raw watch workout starting at `start` (to the
+#        minute, true local wall time) gets workout_cat := new_cat2
+#        (build_dataset.py). Used for watch entries typed "Other" that were gym
+#        work, and one "Cycling" entry that was a real bike ride.
+# kind = real_gap         : both CGM pipelines were empty from `start` to `end`
+#        (inclusive); rows there are flagged real_gap and excluded from clean.
+kind,start,end,new_cat2,new_duration_min,note
+session_override,2000-01-05 18:00,,cricket_indoor,65,example: watch left running; 65 min is the indoor median
+session_override,2000-01-09 17:00,,gym,60,example: recalled as a one-hour session with the watch left running
+workout_relabel,2000-01-04 10:00,,gym,,example: an "Other" watch entry that was gym work
+workout_relabel,2000-01-06 11:30,,cycling,,example: a "Cycling" watch entry that was a real ride
+real_gap,2000-01-07 12:40,2000-01-07 15:40,,,example: both CGM pipelines empty; cause unknown

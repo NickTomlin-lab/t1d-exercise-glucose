@@ -1,0 +1,44 @@
+{
+  "glucose_mean": 7.776153671073346,
+  "glucose_sd": 2.6308195094604323,
+  "glucose_lag1": 0.988387274426083,
+  "glucose_missing_share": 0.020946686226811017,
+  "below4_share": 0.04215334905572784,
+  "bolus_per_day": 8.080213903743315,
+  "bolus_u_mean": 3.280410324288551,
+  "bolus_u_sd": 2.0052249870628036,
+  "carbs_share_of_boluses": 0.9298477829252151,
+  "carbs_g_mean": 32.90832740213523,
+  "carbs_g_sd": 17.900026113905152,
+  "workouts": {
+    "gym": {
+      "per_day": 0.40106951871657753,
+      "duration_min": 74.86666666666666
+    },
+    "cricket": {
+      "per_day": 0.15508021390374332,
+      "duration_min": 137.06896551724137
+    },
+    "football": {
+      "per_day": 0.053475935828877004,
+      "duration_min": 67.5
+    },
+    "walking": {
+      "per_day": 0.058823529411764705,
+      "duration_min": 89.54545454545455
+    }
+  },
+  "hr_rest_mean": 55.394475120982754,
+  "hr_rest_sd": 12.655632396842748,
+  "hr_exercise_mean": 104.45719424460432,
+  "hr_missing_share": 0.3704109487289001,
+  "steps_rest_mean": 24.178713418536546,
+  "steps_exercise_mean": 191.77753496503496,
+  "frac_suspend_mean": 0.43427512952405717,
+  "frac_max_mean": 0.007386603777088633,
+  "frac_uncovered_share": 0.013407364765742513,
+  "est_basal_u_mean": 0.060983443204397324,
+  "activity_share_of_workouts": 0.232,
+  "dia_hours": 2.0,
+  "note": "aggregate statistics of the real train rows; no dates or events"
+}

@@ -1,0 +1,23 @@
+{
+  "_comment": "Example settings.json for a private data folder. Copy to <DATA_DIR>/settings.json and fill in your own window boundaries and split dates. Every key is optional; see src/config.py for the meaning and the defaults. Dates here are placeholders. football_rule and usual_training_times are private; with null the pipeline treats every football-typed workout as football and reports no usual-day split.",
+  "windows": [["2000-01-03", "2000-01-31", 0], ["2000-01-31", "2000-04-30", 1], ["2000-05-15", "2000-08-13", 2], ["2000-08-13", "2000-09-15", 3]],
+  "fence_end": "2000-01-31",
+  "quarantine_window": 3,
+  "test_start": "2000-07-24 00:00",
+  "val_start": "2000-07-03 00:00",
+  "explore_last_start": "2000-08-12 23:55",
+  "dst_days": ["2000-03-26"],
+  "dia_hours": 2.0,
+  "football_rule": null,
+  "indoor_season": {"start": [10, 1], "end": [4, 14]},
+  "fold_by": "month",
+  "cv_min_train_days": 45,
+  "cv_block_days": 14,
+  "cv_min_block_days": 7,
+  "cv_ablation_folds": [["2000-03-01", "2000-03-15"], ["2000-06-01", "2000-06-15"]],
+  "anticipation_grid_start": "2000-01-04 00:00",
+  "anticipation_grid_end": "2000-08-12 23:55",
+  "grid_clock": [5, 23],
+  "usual_training_times": null,
+  "overrides_csv": "overrides.csv"
+}

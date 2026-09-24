@@ -1,0 +1,19 @@
+group,kind,name,n,q1,median,q3
+with_low,signal,t_first_low,44.0,35.0,97.5,145.0
+with_low,signal,t_pump_cut,42.0,-5.0,27.5,112.5
+with_low,signal,t_hr_rise,44.0,-10.0,0.0,1.25
+with_low,signal,t_steps_rise,44.0,-25.0,-20.0,-10.0
+with_low,signal,t_glucose_fall,44.0,0.0,5.0,15.0
+with_low,gap,pump_cut - hr_rise,42.0,0.0,25.0,115.0
+with_low,gap,pump_cut - steps_rise,42.0,7.5,50.0,132.5
+with_low,gap,first_low - pump_cut,42.0,16.25,45.0,73.75
+with_low,gap,first_low - hr_rise,44.0,38.75,110.0,145.0
+without_low,signal,t_first_low,0.0,,,
+without_low,signal,t_pump_cut,64.0,5.0,20.0,60.0
+without_low,signal,t_hr_rise,60.0,-6.25,0.0,5.0
+without_low,signal,t_steps_rise,64.0,-21.25,-15.0,-10.0
+without_low,signal,t_glucose_fall,66.0,5.0,20.0,50.0
+without_low,gap,pump_cut - hr_rise,58.0,5.0,30.0,65.0
+without_low,gap,pump_cut - steps_rise,62.0,21.25,42.5,73.75
+without_low,gap,first_low - pump_cut,0.0,,,
+without_low,gap,first_low - hr_rise,0.0,,,

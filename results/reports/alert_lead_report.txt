@@ -1,0 +1,14 @@
+Alert lead versus the first low, retired test set (existing outputs only; nothing re-scored)
+scored rows: 5872; alert rows: 201 (3.4% of rows, 9.6 per day)
+low episodes (first reading < 4.0 after >= 15 min at or above 4.0): 24
+  alert fired in the preceding 60 min: 23 of 24; missed: 1
+  lead (min), episodes with an alert: median 5, Q1 2, Q3 10, min 0, max 50
+  lead >= 20 min: 2 of 24 episodes (8%)
+  lead >= 30 min: 2 of 24 episodes (8%)
+  lead == 0 (alert on the same row as the low): 6
+  (shares are of ALL episodes, missed ones counted as no lead)
+wrote [path]
+
+Context: the CGM's own predictive alert fires when it predicts a reading below 3.1 mmol/L within 20 min,
+and its low alert fires at the user's threshold; this comparison uses a 4.0 mmol/L threshold and the
+model's 30-minute horizon, so it is not a like-for-like head-to-head.

@@ -1,0 +1,18 @@
+Recomputed from the saved test outputs of the single final test run (the original printout was not kept as a file); nothing was re-fitted or re-scored.
+
+FINAL TEST VERDICT, recomputed from the saved test outputs (n = 5872 clean test rows, 21 days; nothing re-fitted)
+
+1. 30-minute point forecast, RMSE in mmol/L (last-value baseline = glucose now)
+   last-value  overall 1.534 | overnight 1.252 (n=1506) | post-exercise 4h 3.094 (n=132) | below 4 2.059 (n=155)
+   LightGBM    overall 1.207 | overnight 0.935 (n=1506) | post-exercise 4h 2.471 (n=132) | below 4 2.007 (n=155)
+   LightGBM residuals: p5 -1.80, p50 -0.01, p95 2.10; misses > 2 mmol/L: 9.3%
+
+2. band (declared 80% interval): mean width 3.10 mmol/L
+   coverage overall         84.1%  (n=5872)
+   coverage below 4         65.2%  (n=155)
+   coverage overnight       87.1%  (n=1506)
+   coverage post-exercise   60.6%  (n=132)
+
+3. low alert (any reading < 4 in the next 30 min; threshold 0.60): Brier 0.0228 (constant-prevalence 0.0449; prevalence 4.7%)
+   low episodes in test: 24 | caught: 24 | alert episodes per day: 2.2 | alert rows: 201 (3.4% of rows)
+   alert precision (share of alert rows followed by a low within 30 min): 75.6%

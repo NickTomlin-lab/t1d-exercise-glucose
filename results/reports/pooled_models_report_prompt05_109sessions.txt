@@ -1,0 +1,323 @@
+NOTE: this is the earlier session-model run (109 usable sessions, before one short session was admitted to the usable set and the December control windows were re-matched). The re-run on the published tables (110 sessions) is reports/pooled_models_report.txt. Dates, clock times, session ids and file paths have been replaced by [date], [time], [id], [path].
+
+
+==============================================================================
+Part 1. Pooled table (usable explore sessions + their control windows)
+==============================================================================
+Wrote [path]: 435 rows = 109 sessions + 326 controls, 109 sets
+rows dropped for a missing predictor (g0, slope30, bolus_iob_u, est_basal_iob_u, insulin_total_4h, mins_since_meal): 1
+set_id  exercise cat2               start  g0  slope30  bolus_iob_u  est_basal_iob_u  insulin_total_4h  mins_since_meal
+  [id]         0 rest [date] 9.9      NaN          0.0            0.686            2.4405            510.0
+controls per set after the drop: {2: 1, 3: 108}
+sum of weights: sessions 109.0, controls 109.0
+
+rows by cat2:
+cat2
+rest               326
+gym                 69
+cricket_indoor      15
+cricket_outdoor     15
+football            10
+
+sets by fold month (calendar month of the session start):
+fold_month
+0     9
+1    26
+2    21
+3    21
+4     4
+5    11
+6    13
+7     4
+
+outcome rates, exercise vs rest (unweighted over rows / weighted):
+  low_any     exercise=1:  44/109 = 0.404  weighted 0.404
+  low_any     exercise=0: 113/326 = 0.347  weighted 0.346
+  below3_any  exercise=1:  14/109 = 0.128  weighted 0.128
+  below3_any  exercise=0:  29/326 = 0.089  weighted 0.089
+
+predictor summary (pooled rows):
+                  count   mean    std    min    50%     max
+g0               435.00   7.62   2.51   2.70   7.20   18.30
+slope30          435.00   0.00   1.74 -10.50   0.00    6.90
+bolus_iob_u      435.00   1.52   2.26   0.00   0.13   12.19
+est_basal_iob_u  435.00   0.74   0.35   0.01   0.73    1.96
+insulin_total_4h 435.00   7.66   4.92   0.73   6.66   26.75
+mins_since_meal  435.00 290.37 323.86   5.00 120.00 1440.00
+overridden sets: ['[id]', '[id]']
+
+==============================================================================
+Part 2. Models (fixed; no tuning)
+==============================================================================
+  B0      : constant (weighted training base rate)
+  B1      : g0 + slope30
+  M_ex    : g0 + slope30 + exercise
+  M_ins2  : g0 + slope30 + bolus_iob_u + est_basal_iob_u
+  M_ins4  : g0 + slope30 + insulin_total_4h
+  M_full  : g0 + slope30 + insulin_total_4h + exercise
+  M_int   : g0 + slope30 + insulin_total_4h + exercise + ex_x_ins4
+  M_sport : g0 + slope30 + insulin_total_4h + sp_gym + sp_cricket_indoor + sp_cricket_outdoor + sp_football
+  all: weighted L2 logistic regression, C = 1.0, standardised on training rows
+
+==============================================================================
+Forward-chaining evaluation: outcome = low_any, all pooled rows
+==============================================================================
+folds (train = all sets whose session started in an earlier month):
+ test_month  train_sets  train_rows  train_rate_w  test_sets  test_rows  test_pos  test_rate_w
+          1           9          36         0.204         26        104        26        0.295
+          2          35         140         0.271         21         83        24        0.302
+          3          56         223         0.283         21         84        44        0.508
+          4          77         307         0.344          4         16         3        0.125
+          5          81         323         0.333         11         44        17        0.409
+          6          92         367         0.342         13         52        27        0.551
+          7         105         419         0.368          4         16         9        0.542
+
+pooled out-of-fold rows: 399  sets: 100  ([month] sets, fold_month 0, are training-only and never scored)
+
+headline (weighted Brier / log loss / AUC; lower Brier and log loss are better):
+         brier_w  logloss_w  auc_w  n_rows  n_sets    sum_w
+model                                                      
+B0        0.2463     0.6891 0.5828     399     100 200.0000
+B1        0.2280     0.6677 0.6755     399     100 200.0000
+M_ex      0.2286     0.6717 0.6704     399     100 200.0000
+M_ins2    0.2352     0.6860 0.6499     399     100 200.0000
+M_ins4    0.2261     0.6531 0.6770     399     100 200.0000
+M_full    0.2209     0.6535 0.6812     399     100 200.0000
+M_int     0.2214     0.6734 0.6924     399     100 200.0000
+M_sport   0.2472     0.7292 0.6415     399     100 200.0000
+
+paired Brier differences, cluster bootstrap over set_id (2000 draws, seed 20260921); negative = first model better:
+                 diff_brier   ci_lo  ci_hi  frac_draws_negative
+comparison                                                     
+B0 - B1              0.0182  0.0013 0.0348               0.0175
+M_ex - B1            0.0005 -0.0058 0.0072               0.4400
+M_ins2 - B1          0.0072  0.0014 0.0130               0.0070
+M_ins4 - B1         -0.0020 -0.0127 0.0077               0.6545
+M_full - B1         -0.0071 -0.0247 0.0088               0.8120
+M_int - B1          -0.0066 -0.0333 0.0191               0.6810
+M_sport - B1         0.0191 -0.0069 0.0439               0.0820
+M_ins4 - M_ins2     -0.0092 -0.0212 0.0020               0.9390
+M_full - M_ins4     -0.0051 -0.0162 0.0055               0.8210
+
+==============================================================================
+Part 3 (cont.). Calibration, tertiles of out-of-fold predicted probability
+==============================================================================
+
+B1
+        n  n_sessions  p_min  p_max  mean_pred_w  obs_rate_w  obs_rate_unw
+bin                                                                       
+low   134          45  0.005  0.223        0.133       0.246         0.201
+mid   132          29  0.224  0.330        0.279       0.341         0.341
+high  133          26  0.331  0.844        0.436       0.615         0.586
+
+M_ins4
+        n  n_sessions  p_min  p_max  mean_pred_w  obs_rate_w  obs_rate_unw
+bin                                                                       
+low   133          51  0.005  0.220        0.145       0.242         0.233
+mid   133          36  0.220  0.406        0.299       0.453         0.383
+high  133          13  0.407  0.854        0.552       0.528         0.511
+
+M_full
+        n  n_sessions  p_min  p_max  mean_pred_w  obs_rate_w  obs_rate_unw
+bin                                                                       
+low   133          23  0.004  0.175        0.105       0.250         0.263
+mid   133          42  0.176  0.377        0.271       0.295         0.301
+high  133          35  0.378  0.903        0.564       0.616         0.564
+
+==============================================================================
+Part 4. Odds ratios, fit once on all pooled explore rows (low_any)
+==============================================================================
+
+M_full  (fit on all 435 pooled rows, 109 sets; cluster bootstrap 2000 draws, seed 20260921, 0 single-class draws skipped)
+                                     unit    OR  ci_lo  ci_hi  boot_valid
+term                                                                     
+g0                           per 1 mmol/L 0.877  0.775  0.972        2000
+slope30           per 1 mmol/L per 30 min 0.805  0.661  0.968        2000
+insulin_total_4h                  per 1 U 1.105  1.052  1.168        2000
+exercise                 exercise vs rest 2.122  1.254  3.596        2000
+
+M_int  (fit on all 435 pooled rows, 109 sets; cluster bootstrap 2000 draws, seed 20260921, 0 single-class draws skipped)
+                                                                             unit    OR  ci_lo  ci_hi  boot_valid
+term                                                                                                             
+g0                                                                   per 1 mmol/L 0.855  0.745  0.950        2000
+slope30                                                   per 1 mmol/L per 30 min 0.786  0.636  0.955        2000
+insulin_total_4h                                                          per 1 U 1.040  0.996  1.083        2000
+exercise                                                         exercise vs rest 0.397  0.155  0.950        2000
+ex_x_ins4                                    exercise x insulin_total_4h, per 1 U 1.330  1.146  1.608        2000
+exercise @ median insulin_total_4h  exercise vs rest at insulin_total_4h = 6.66 U 2.654  1.475  5.462        2000
+
+M_sport  (fit on all 435 pooled rows, 109 sets; cluster bootstrap 2000 draws, seed 20260921, 0 single-class draws skipped)
+                                       unit    OR  ci_lo  ci_hi  boot_valid
+term                                                                       
+g0                             per 1 mmol/L 0.871  0.752  0.972        2000
+slope30             per 1 mmol/L per 30 min 0.788  0.636  0.937        2000
+insulin_total_4h                    per 1 U 1.092  1.040  1.151        2000
+sp_gym                          gym vs rest 1.630  0.882  2.823        2000
+sp_cricket_indoor    cricket_indoor vs rest 4.162  1.492 13.768        2000
+sp_cricket_outdoor  cricket_outdoor vs rest 1.870  0.410  8.346        2000
+sp_football                football vs rest 3.778  0.903 23.577        2000
+
+(a) After accounting for starting glucose, the 30-min slope and insulin over the previous 4 h, the odds of a low (< 4.0 mmol/L during the window or in the 2 h after it) in an exercise session (M_full) are 2.12 times those of a matched rest window (95% cluster-bootstrap interval 1.25 to 3.60).
+(b) After accounting for starting glucose, the 30-min slope and insulin over the previous 4 h, the odds of a low (< 4.0 mmol/L during the window or in the 2 h after it) in a football session (M_sport) are 3.78 times those of a matched rest window (95% cluster-bootstrap interval 0.90 to 23.58).
+
+==============================================================================
+Part 5a. Sensitivity: overridden sessions and their controls removed
+==============================================================================
+removed sets: ['[id]', '[id]']  -> 427 rows, 107 sets
+
+==============================================================================
+Forward-chaining evaluation: outcome = low_any, overridden sets removed
+==============================================================================
+folds (train = all sets whose session started in an earlier month):
+ test_month  train_sets  train_rows  train_rate_w  test_sets  test_rows  test_pos  test_rate_w
+          1           9          36         0.204         25        100        26        0.307
+          2          34         136         0.279         21         83        24        0.302
+          3          55         219         0.288         21         84        44        0.508
+          4          76         303         0.349          3         12         2        0.111
+          5          79         315         0.340         11         44        17        0.409
+          6          90         359         0.348         13         52        27        0.551
+          7         103         411         0.374          4         16         9        0.542
+
+pooled out-of-fold rows: 391  sets: 98  ([month] sets, fold_month 0, are training-only and never scored)
+
+headline (weighted Brier / log loss / AUC; lower Brier and log loss are better):
+         brier_w  logloss_w  auc_w  n_rows  n_sets    sum_w
+model                                                      
+B0        0.2481     0.6930 0.5832     391      98 196.0000
+B1        0.2306     0.6736 0.6716     391      98 196.0000
+M_ex      0.2312     0.6775 0.6652     391      98 196.0000
+M_ins2    0.2379     0.6920 0.6454     391      98 196.0000
+M_ins4    0.2286     0.6584 0.6730     391      98 196.0000
+M_full    0.2235     0.6590 0.6773     391      98 196.0000
+M_int     0.2240     0.6821 0.6900     391      98 196.0000
+M_sport   0.2444     0.7201 0.6482     391      98 196.0000
+
+paired Brier differences, cluster bootstrap over set_id (2000 draws, seed 20260921); negative = first model better:
+              diff_brier   ci_lo  ci_hi  frac_draws_negative
+comparison                                                  
+B0 - B1           0.0175  0.0006 0.0345               0.0225
+M_ex - B1         0.0006 -0.0058 0.0074               0.4405
+M_ins2 - B1       0.0072  0.0019 0.0130               0.0050
+M_ins4 - B1      -0.0020 -0.0130 0.0080               0.6640
+M_full - B1      -0.0071 -0.0244 0.0098               0.7930
+M_int - B1       -0.0066 -0.0348 0.0204               0.6835
+M_sport - B1      0.0138 -0.0118 0.0386               0.1500
+
+Part 4(a) repeated without the overridden sets:
+
+M_full  (fit on all 427 pooled rows, 107 sets; cluster bootstrap 2000 draws, seed 20260921, 0 single-class draws skipped)
+                                     unit    OR  ci_lo  ci_hi  boot_valid
+term                                                                     
+g0                           per 1 mmol/L 0.879  0.771  0.971        2000
+slope30           per 1 mmol/L per 30 min 0.813  0.668  0.975        2000
+insulin_total_4h                  per 1 U 1.108  1.051  1.174        2000
+exercise                 exercise vs rest 2.147  1.288  3.612        2000
+
+(a) After accounting for starting glucose, the 30-min slope and insulin over the previous 4 h, the odds of a low (< 4.0 mmol/L) in an exercise session (M_full, overridden sets removed) are 2.15 times those of a matched rest window (95% cluster-bootstrap interval 1.29 to 3.61).
+
+==============================================================================
+Part 5b. Sensitivity: outcome = below3_any (B1, M_ins4, M_full only)
+==============================================================================
+
+==============================================================================
+Forward-chaining evaluation: outcome = below3_any, all pooled rows
+==============================================================================
+folds (train = all sets whose session started in an earlier month):
+ test_month  train_sets  train_rows  train_rate_w  test_sets  test_rows  test_pos  test_rate_w
+          1           9          36         0.093         26        104         7        0.096
+          2          35         140         0.095         21         83         3        0.071
+          3          56         223         0.086         21         84         8        0.095
+          4          77         307         0.089          4         16         0        0.000
+          5          81         323         0.084         11         44         5        0.106
+          6          92         367         0.087         13         52        13        0.269
+          7         105         419         0.110          4         16         2        0.083
+
+pooled out-of-fold rows: 399  sets: 100  ([month] sets, fold_month 0, are training-only and never scored)
+
+headline (weighted Brier / log loss / AUC; lower Brier and log loss are better):
+        brier_w  logloss_w  auc_w  n_rows  n_sets    sum_w
+model                                                     
+B1       0.1000     0.3648 0.4448     399     100 200.0000
+M_ins4   0.1189     0.4011 0.5287     399     100 200.0000
+M_full   0.1198     0.4043 0.5126     399     100 200.0000
+
+paired Brier differences, cluster bootstrap over set_id (2000 draws, seed 20260921); negative = first model better:
+                 diff_brier   ci_lo  ci_hi  frac_draws_negative
+comparison                                                     
+M_ins4 - B1          0.0189  0.0061 0.0364               0.0000
+M_full - B1          0.0198  0.0084 0.0340               0.0000
+M_full - M_ins4      0.0009 -0.0050 0.0073               0.3765
+
+Part 4(a) repeated with below3_any:
+
+M_full  (fit on all 435 pooled rows, 109 sets; cluster bootstrap 2000 draws, seed 20260921, 0 single-class draws skipped)
+                                     unit    OR  ci_lo  ci_hi  boot_valid
+term                                                                     
+g0                           per 1 mmol/L 1.018  0.899  1.142        2000
+slope30           per 1 mmol/L per 30 min 0.975  0.752  1.271        2000
+insulin_total_4h                  per 1 U 1.084  1.002  1.164        2000
+exercise                 exercise vs rest 1.993  0.904  4.279        2000
+
+(a) After accounting for starting glucose, the 30-min slope and insulin over the previous 4 h, the odds of a reading below 3.0 mmol/L during the window or in the 2 h after it in an exercise session (M_full) are 1.99 times those of a matched rest window (95% cluster-bootstrap interval 0.90 to 4.28).
+
+==============================================================================
+Part 5 summary. Exercise odds ratio (M_full) across the three settings
+==============================================================================
+                               OR  ci_lo  ci_hi
+low_any, all rows           2.122  1.254  3.596
+low_any, overridden removed 2.147  1.288  3.612
+below3_any, all rows        1.993  0.904  4.279
+
+==============================================================================
+Assumptions made where prompt 03 did not settle the point
+==============================================================================
+
+ 1. Pooled table = usable explore sessions (usable == 1, session_split ==
+    explore) plus every control window in control_windows.csv that belongs to
+    one of them. Controls are already explore-only by construction.
+ 2. Rows with any missing value among g0, slope30, bolus_iob_u,
+    est_basal_iob_u, insulin_total_4h, mins_since_meal are dropped
+    individually (a session's controls are kept even if the session itself
+    were dropped, and vice versa). Control weights use k = controls REMAINING
+    in the pooled table, so each set's controls still sum to weight 1.
+ 3. pooled_windows.csv carries two extra columns beyond the requested list:
+    weight and fold_month (calendar month of the session start).
+ 4. Fold = calendar month of the SESSION start (fold_month = months since
+    [month], so Dec = 0 and the 2026 months keep their calendar number);
+    controls are assigned the month of their session, not their own date (a
+    control up to 28 days from its session can therefore sit in a different
+    calendar month from its own start). Training = every set with a strictly
+    earlier fold month. [month] sets are training-only. April holds only 13 days of window 1 and no
+    sessions fall in the [date] gap.
+ 5. Standardisation: unweighted mean/sd of the training rows; a predictor
+    that is constant in the training rows (e.g. cricket_outdoor before May)
+    is left at 0 after centring, so it contributes nothing in that fold.
+    Indicator columns and the interaction are standardised like the others.
+ 6. Weighted logistic regression is scikit-learn's: 0.5 * ||beta||^2 +
+    C * sum_i w_i * logloss_i, intercept unpenalised, lbfgs. B0 is the
+    weighted base rate of the training rows.
+ 7. Weighted Brier / log loss = sum(w * loss) / sum(w); AUC is
+    roc_auc_score with sample_weight. n is given as rows, sets and sum of
+    weights. Log loss clips probabilities to [1e-9, 1 - 1e-9].
+ 8. Paired Brier difference: cluster bootstrap resamples set_id from the
+    pooled out-of-fold predictions (no refitting), 2,000 draws, seed
+    20260921, percentile interval; the same resampled sets are used for
+    every comparison in a table. A training fold with a single outcome class
+    would fall back to the base rate and be noted; none occurred unless a
+    note is printed above.
+ 9. Calibration tertiles are unweighted terciles of the out-of-fold
+    predicted probability; mean predicted and observed rate in each bin are
+    weight-averaged (unweighted observed rate also shown).
+10. Odds ratios are on the raw scale: standardised coefficient divided by
+    the training sd of that column, exponentiated. For M_int the 'exercise'
+    row is the exercise effect at insulin_total_4h = 0; an extra row gives
+    the exercise OR at the pooled median insulin_total_4h.
+11. OR bootstrap: resample set_id with replacement, refit the same model
+    (standardising on the resample), 2,000 draws, seed 20260921, percentile
+    interval of the raw-scale coefficient. Draws in which a column is
+    constant give NaN for that term (boot_valid counts the rest); draws
+    with a single outcome class are skipped and counted.
+12. Part 5a re-runs the full model list; Part 5b runs B1, M_ins4, M_full
+    only, as asked. Each bootstrap block restarts the generator from the
+    same seed so every table is reproducible on its own.
+

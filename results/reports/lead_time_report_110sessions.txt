@@ -1,0 +1,115 @@
+Sanitised copy of the lead-time report re-run on the current 110-session table (the with-low group is unchanged at 44 sessions); file paths replaced by [path].
+
+Analysis only: nothing here informs a dosing decision. Glucose in mmol/L.
+Usable explore sessions: 110   with a low (low_during or low_post2h): 44   without a low (low_any == 0): 66
+All times below are minutes relative to the session start (negative = before start).
+
+==============================================================================
+1. Sessions with a low: when each signal first appeared (min from start)
+==============================================================================
+                n_present  n_absent    q1  median    q3   min   max
+signal                                                             
+t_first_low            44         0  35.0    97.5 145.0   0.0 285.0
+t_pump_cut             42         2  -5.0    27.5 112.5 -30.0 195.0
+t_hr_rise              44         0 -10.0     0.0   1.2 -30.0  80.0
+t_steps_rise           44         0 -25.0   -20.0 -10.0 -30.0   0.0
+t_glucose_fall         44         0   0.0     5.0  15.0   0.0 105.0
+
+Activity mode already on at start: 10 of 44 sessions
+Pump already suspended (frac_suspend >= 0.5) at start - 30 min: 19 of 44
+  of which the suspend run began before start - 30 (cut_before_window): 15
+HR baseline unavailable: 0 of 44
+by cat2 (n, n with pump cut, n with HR rise, n with steps rise):
+                  n  pump_cut  hr_rise  steps_rise  glucose_fall
+cat2                                                            
+cricket_indoor    8         8        8           8             8
+cricket_outdoor   6         6        6           6             6
+football          6         5        6           6             6
+gym              24        23       24          24            24
+
+==============================================================================
+2. Sessions with a low: gaps between signals (min; positive = first named event later)
+==============================================================================
+                        n   q1  median    q3  frac_positive
+gap                                                        
+pump_cut - hr_rise     42  0.0    25.0 115.0            0.7
+pump_cut - steps_rise  42  7.5    50.0 132.5            0.9
+first_low - pump_cut   42 16.2    45.0  73.8            0.8
+first_low - hr_rise    44 38.8   110.0 145.0            0.9
+
+sensitivity: the same gaps for the 29 sessions with a low where the pump was NOT already in a suspend run before start - 30 min
+                        n    q1  median    q3  frac_positive
+gap                                                         
+pump_cut - hr_rise     28 -15.0     5.0  30.0            0.6
+pump_cut - steps_rise  28   5.0    20.0  60.0            0.8
+first_low - pump_cut   28  25.0    50.0 110.0            0.9
+first_low - hr_rise    29  35.0    60.0 140.0            0.9
+
+==============================================================================
+3. Sessions WITHOUT a low: the same signals and gaps
+==============================================================================
+                n_present  n_absent    q1  median    q3   min   max
+signal                                                             
+t_pump_cut             64         2   5.0    20.0  60.0 -30.0 190.0
+t_hr_rise              60         6  -6.2     0.0   5.0 -30.0  35.0
+t_steps_rise           64         2 -21.2   -15.0 -10.0 -30.0   5.0
+t_glucose_fall         66         0   5.0    20.0  50.0   0.0 125.0
+                        n   q1  median   q3  frac_positive
+gap                                                       
+pump_cut - hr_rise     58  5.0    30.0 65.0            0.8
+pump_cut - steps_rise  62 21.2    42.5 73.8            0.9
+
+==============================================================================
+4. Pump lead time by starting glucose (g0 at session start)
+==============================================================================
+
+pump_cut - hr_rise  (min; positive = pump cut came after the hr_rise)
+                          n_sessions  n_with_both  n_cut_before_window   q1  median    q3
+              g0_band                                                                    
+with a low    g0 < 7.0            24           23                   10 -5.0    65.0 117.5
+              g0 7.0-9.9          13           12                    5  5.0    15.0  55.0
+              g0 >= 10.0           7            7                    0 17.5    25.0  80.0
+without a low g0 < 7.0            18           15                    8 -5.0    25.0  70.0
+              g0 7.0-9.9          35           30                    5  6.2    20.0  50.0
+              g0 >= 10.0          13           13                    2 10.0    40.0  75.0
+
+pump_cut - steps_rise  (min; positive = pump cut came after the steps_rise)
+                          n_sessions  n_with_both  n_cut_before_window   q1  median    q3
+              g0_band                                                                    
+with a low    g0 < 7.0            24           23                   10  5.0    95.0 137.5
+              g0 7.0-9.9          13           12                    5 12.5    27.5  67.5
+              g0 >= 10.0           7            7                    0 20.0    55.0  97.5
+without a low g0 < 7.0            18           17                    8  0.0    45.0  85.0
+              g0 7.0-9.9          35           32                    5 23.8    35.0  56.2
+              g0 >= 10.0          13           13                    2 30.0    55.0  95.0
+
+==============================================================================
+5. Plain reading
+==============================================================================
+Across 44 sessions that included a low, the watch showed exercise (heart rate up 30 bpm) a median of 25 minutes before the pump first cut delivery (n = 42 sessions with both signals); the first low came a median of 45 minutes after the pump acted (n = 42).
+Using steps instead of heart rate: the watch showed movement a median of 50 minutes before the pump cut (n = 42).
+
+wrote [path]
+
+==============================================================================
+6. Sanity print: five sessions with a low, all timestamps (private check against memory)
+==============================================================================
+example rows withheld (they carry timestamps)
+
+==============================================================================
+Method notes
+==============================================================================
+
+ 1. 'Sessions that included a low' = low_during == 1 or low_post2h == 1 (= low_any).
+ 2. Session start/end are the 5-min grid rows in sessions.csv (overrides applied).
+ 3. Pump cut and glucose fall are searched up to end + 2 h; HR rise and steps
+    rise up to the session END. A signal not found is NaN and that session drops
+    out of any gap using it.
+ 4. A pump already suspended at start - 30 min has no 'first cut' unless it
+    resumes for 30 min and cuts again; cut_before_window marks those and the gap
+    tables are repeated without them.
+ 5. HR baseline = median hr_mean over [start - 150, start - 30) min.
+ 6. Quartiles are pandas linear-interpolation quantiles over sessions with the
+    signal(s) present; gaps are signed.
+ 7. No model is fitted; no prospective row is read past the initial filter.
+

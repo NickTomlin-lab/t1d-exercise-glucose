@@ -1,0 +1,102 @@
+Sanitised copy: the fold boundary dates are replaced by [date].
+
+usable train rows: 50753 ([date] to [date]), lows 7.6%
+
+feature sets:
+  F0: 45 features: existing list (pump 2 h linear IOB)
+  F1: 46 features: F0, 2 h IOB -> iob5_bolus_u + iob5_basal_u + insulin_activity_u_per_5min
+  F2: 47 features: F1 + cob_g
+  F3: 49 features: F2 + iob5_total_x_exercising + iob5_total_x_post_ex_4h
+  F4: 45 features: F0, 2 h IOB -> iob3_bolus_u + iob3_total_u
+
+folds (10): 14-day test blocks; train = all usable rows before the block, last 20% of the train fold = validation (early stopping + isotonic)
+  block test start   test end  n_train  n_val n_test test lows  best_iter by set
+   0 [date] [date]     9647   2412   3475     11.3%  F0=49 F1=58 F2=53 F3=42 F4=51
+   1 [date] [date]    12427   3107   3842      6.6%  F0=40 F1=38 F2=42 F3=52 F4=39
+   2 [date] [date]    15500   3876   3881      7.1%  F0=72 F1=58 F2=65 F3=58 F4=71
+   3 [date] [date]    18605   4652   3912      8.8%  F0=83 F1=74 F2=83 F3=91 F4=80
+   4 [date] [date]    21735   5434   4339      3.0%  F0=61 F1=63 F2=66 F3=56 F4=52
+   5 [date] [date]    25206   6302   2256      7.2%  F0=66 F1=68 F2=72 F3=92 F4=79
+   6 [date] [date]    27011   6753   3867      7.0%  F0=85 F1=80 F2=80 F3=92 F4=96
+   7 [date] [date]    30104   7527   3842      8.3%  F0=65 F1=64 F2=62 F3=63 F4=59
+   8 [date] [date]    33178   8295   3956     10.2%  F0=57 F1=67 F2=78 F3=62 F4=73
+   9 [date] [date]    36343   9086   5324      7.9%  F0=55 F1=64 F2=61 F3=59 F4=64
+  (22 s)
+
+POOLED OUT-OF-FOLD (n=38694 rows, 141 scored days, lows 7.7%, 261 actual low episodes)
+  constant-prevalence Brier 0.0708
+  set   Brier  logloss    AUC | at p>=0.60: episodes caught alert eps/day precision warn iv/day
+  F0   0.0342   0.1308 0.9501 |     250/261              2.22     85.4%        12.3
+  F1   0.0343   0.1342 0.9506 |     251/261              2.29     84.3%        13.0
+  F2   0.0342   0.1321 0.9527 |     242/261              2.11     87.6%        11.7
+  F3   0.0343   0.1373 0.9503 |     243/261              2.18     87.3%        11.8
+  F4   0.0344   0.1360 0.9490 |     246/261              2.21     86.8%        11.8
+
+paired Brier differences vs F0 (block bootstrap over the 10 test blocks, 2000 draws, seed 20260923); negative = new set better:
+  comparison     diff    ci_lo    ci_hi  frac<0
+  F1 - F0     +0.0001  -0.0004  +0.0006   0.290
+  F2 - F0     +0.0000  -0.0004  +0.0004   0.389
+  F3 - F0     +0.0002  -0.0004  +0.0007   0.263
+  F4 - F0     +0.0002  -0.0001  +0.0005   0.059
+
+Brier by regime (pooled out-of-fold rows):
+  regime                                  n   lows      F0      F1      F2      F3      F4
+  all                                 38694   7.7%  0.0342  0.0343  0.0342  0.0343  0.0344
+  overnight [time]-[time]                9754   7.2%  0.0217  0.0218  0.0218  0.0220  0.0219
+  post-meal (<= 3 h since carbs)      20743  10.9%  0.0509  0.0509  0.0509  0.0510  0.0510
+  post-exercise (<= 4 h since end)     3707  12.1%  0.0634  0.0621  0.0614  0.0618  0.0632
+  below 4 now                          1674  85.4%  0.0979  0.0971  0.0963  0.0975  0.0973
+  2-5 h after last carb bolus         10176   9.5%  0.0357  0.0360  0.0361  0.0360  0.0361
+
+paired Brier differences vs F0 by regime (same block bootstrap):
+  regime                                                F1-F0                    F2-F0                    F3-F0                    F4-F0
+  all                                +0.0001 [-0.0004,+0.0006] +0.0000 [-0.0004,+0.0004] +0.0002 [-0.0004,+0.0007] +0.0002 [-0.0001,+0.0005]
+  overnight [time]-[time]              +0.0001 [-0.0006,+0.0009] +0.0001 [-0.0005,+0.0007] +0.0003 [-0.0002,+0.0008] +0.0002 [-0.0002,+0.0006]
+  post-meal (<= 3 h since carbs)     -0.0000 [-0.0009,+0.0008] -0.0000 [-0.0006,+0.0005] +0.0001 [-0.0009,+0.0011] +0.0001 [-0.0004,+0.0007]
+  post-exercise (<= 4 h since end)   -0.0012 [-0.0027,-0.0001] -0.0019 [-0.0035,-0.0004] -0.0015 [-0.0036,+0.0004] -0.0002 [-0.0016,+0.0014]
+  below 4 now                        -0.0008 [-0.0037,+0.0030] -0.0016 [-0.0040,+0.0013] -0.0004 [-0.0044,+0.0040] -0.0006 [-0.0038,+0.0026]
+  2-5 h after last carb bolus        +0.0003 [-0.0007,+0.0013] +0.0003 [-0.0004,+0.0011] +0.0003 [-0.0006,+0.0012] +0.0004 [-0.0002,+0.0010]
+
+F3 gain-importance rank (of 49), last fold's model, for the record:
+  iob5_bolus_u                   rank 15  share   1.0%
+  iob5_basal_u                   rank 17  share   1.0%
+  insulin_activity_u_per_5min    rank  9  share   1.4%
+  cob_g                          rank 21  share   0.8%
+  iob5_total_x_exercising        rank 43  share   0.1%
+  iob5_total_x_post_ex_4h        rank 36  share   0.3%
+  top 8 by gain: g_lag0, g_lag1, slope_15, g_lag2, frac_suspend, workout_24h, hrs_since_ex, slope_30
+
+Replacing the 2-hour straight-line IOB with the 5-hour curve changed the low classifier's Brier score by +0.0001 (interval -0.0004 to +0.0006; F0 Brier 0.0342), and in the 2 to 5 h post-meal window by +0.0003 (interval -0.0007 to +0.0013).
+Negative means the curve helped; the person's logged prediction was 'not at all'.
+
+Assumptions made where the prompt did not settle the point:
+ 1. Doses are taken from aligned_5min.csv at interval level (bolus_u, est_basal_u,
+    carbs_g), not from the raw bolus timestamps: a bolus is aged from the start of the
+    5-minute interval that holds it (full dose in that row), and basal delivery in an
+    interval is seen from the next row at mid-interval age, matching est_basal_iob_u.
+ 2. insulin_activity_u_per_5min = activity(t) x 5 min summed over bolus AND basal doses;
+    carbs_absorbed_g_per_5min = C x 5/180 for every carb entry younger than 3 h.
+ 3. Folds: 14-calendar-day blocks starting 45 days after the first usable row
+    ([date] -> first block [date]). The 3-day tail of window 1 ([date])
+    and the 5-day tail of the train split ([date]) each hold under 7 days of data and
+    are folded into the block before them; the [date] gap holds no rows and is skipped.
+ 4. Inside each training fold the last 20 % of rows (time order) is the validation
+    fold; it drives early stopping (patience 100, as train_hypo_classifier.py) and
+    fits the isotonic calibrator; the model is fitted on the first 80 %. The test
+    block never influences its own model.
+ 5. Episode logic is the one in train_hypo_classifier.py (cv_ablation_exercise.py has
+    none): a low episode is a run of readings < 4 with gaps <= 15 min merged; caught if
+    any warning fired in the 30 min before it or during it; an alert episode is a
+    maximal run of warned intervals. Days = distinct calendar days with scored rows.
+ 6. "Interval precision" = share of warned intervals (p >= 0.60) whose target is 1.
+ 7. Regimes: post-meal = min_since_carbs <= 180; post-exercise = hrs_since_exercise
+    <= 4 (workout END); 2-5 h window = 120 <= min_since_carbs <= 300, where carbs are
+    the carbs_g entries (every carb entry sits on a bolus row).
+ 8. Block bootstrap: resample the test blocks with replacement (same draws for every
+    comparison), Brier difference = pooled difference over the resampled rows; 2,000
+    draws, seed 20260923, percentile interval.
+ 9. Window 0 ([date] - [date]) is training-only in the first fold and is scored from
+    [date] onward like everything else; nothing crosses the window-0 fence because
+    the v2 features are computed per window and `clean` already excludes rows whose
+    past hour spans the fence.
+

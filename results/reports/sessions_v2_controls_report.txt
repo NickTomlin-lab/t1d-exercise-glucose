@@ -1,0 +1,348 @@
+NOTE: this is the earlier session-table and control-window report (89 usable sessions, two data windows, before the December back-fill). The matching report for the current 110-session table is reports/controls_report_110sessions.txt. Dates, clock times, session ids and file paths replaced by [date], [time], [id], [path]; example-row tables withheld; the prospective-period count removed.
+
+##### build_sessions.py v2 QC report #####
+Wrote [path]: 98 sessions (93 explore, 5 prospective)
+
+==============================================================================
+1. Explore sessions by category and window
+==============================================================================
+window            1   2  All
+cat2                        
+cricket_indoor   14   0   14
+cricket_outdoor   0  15   15
+football          7   1    8
+gym              43  13   56
+All              64  29   93
+
+Merged sessions (n_parts > 1): 0 of 93
+Sessions built from >1 raw watch workout (n_workouts > 1): 3 of 93  (watch splits already fused on the 5-min grid by build_dataset.py)
+session_id cat2               start                 end  duration_min  n_parts  n_workouts
+      [id]  gym [date] [date]          60.0        1           2
+      [id]  gym [date] [date]          55.0        1           2
+      [id]  gym [date] [date]          75.0        1           2
+
+Not usable (v2 rule): 4 of 93   [v1 rule: 15]  (reasons, not exclusive)
+  outcome_missing_frac > 0.20 : 2
+  g0 missing                  : 1
+  real_gap/dst_day in span    : 2
+session_id cat2               start  duration_min  outcome_missing_frac  rows_missing_in_span   g0 flag_reason
+      [id]  gym [date]          70.0              0.000000                     0 10.7    real_gap
+      [id]  gym [date]          90.0              1.000000                     0  NaN            
+      [id]  gym [date]          60.0              0.194444                     0  7.9    real_gap
+      [id]  gym [date]         130.0              0.600000                     0  5.5            
+
+long_uncovered == 1 (info only): 5 explore sessions
+
+Usable explore sessions by category and window
+window            1   2  All
+cat2                        
+cricket_indoor   14   0   14
+cricket_outdoor   0  15   15
+football          7   1    8
+gym              40  12   52
+All              61  28   89
+
+Duration (min) of explore sessions by cat2
+                 count    min    25%    50%    75%    max
+cat2                                                     
+cricket_indoor    14.0   50.0   60.0   65.0   82.5  240.0
+cricket_outdoor   15.0  100.0  137.5  215.0  245.0  415.0
+football           8.0   60.0   65.0   65.0   70.0   90.0
+gym               56.0   55.0   70.0   80.0   95.0  135.0
+
+==============================================================================
+cat2
+cricket_outdoor    4
+gym                1
+Total prospective: 5
+
+==============================================================================
+3. Outcomes, usable explore sessions
+==============================================================================
+n usable = 89
+  low_during  :  19  (21.3%)
+  low_post2h  :  29  (32.6%)
+  low_any     :  39  (43.8%)
+  low_late    :  54  (60.7%)
+  below3_any  :  12  (13.5%)
+
+first_low_min (n=39 with a low in start..end+2h): median 95, Q1 30, Q3 148 min
+nadir: median 4.2, Q1 3.4, Q3 5.7 mmol/L
+
+==============================================================================
+4. low_any rate by ... (usable explore sessions, n in every cell)
+==============================================================================
+
+by cat
+           n   k   rate
+cat                    
+cricket   29  13  0.448
+football   8   5  0.625
+gym       52  21  0.404
+
+by cat2
+                  n   k   rate
+cat2                          
+cricket_indoor   14   7  0.500
+cricket_outdoor  15   6  0.400
+football          8   5  0.625
+gym              52  21  0.404
+
+by meal_band
+            n   k   rate
+meal_band               
+0-2h       27  12  0.444
+2-4h       25  16  0.640
+4-6h        3   0  0.000
+6h+        34  11  0.324
+
+by prevlow_band
+               n   k   rate
+prevlow_band               
+1-30          17   4  0.235
+31-90         31  14  0.452
+90+           21  12  0.571
+none          20   9  0.450
+
+by fed_2h
+         n   k   rate
+fed_2h               
+0       62  27  0.435
+1       27  12  0.444
+
+by fed_4h
+         n   k   rate
+fed_4h               
+0       37  11  0.297
+1       52  28  0.538
+
+by any_low_prev24h
+                  n   k   rate
+any_low_prev24h               
+0                20   9  0.450
+1                69  30  0.435
+
+by activity_at_start
+                    n   k   rate
+activity_at_start               
+0                  68  30  0.441
+1                  21   9  0.429
+
+==============================================================================
+5. Fed state vs insulin (usable explore sessions)
+==============================================================================
+corr(fed_4h, insulin_total_4h) = 0.677
+insulin_total_4h median = 4.87 U  (hi = above median)
+                       n   k   rate
+fed_4h insulin_4h_hi               
+0      0              35  10  0.286
+       1               2   1  0.500
+1      0              10   2  0.200
+       1              42  26  0.619
+
+correction_only_4h == 1: 1 of 89 usable explore sessions
+
+==============================================================================
+6. Five example explore sessions (all columns, transposed)
+==============================================================================
+example rows withheld (they carry timestamps)
+
+==============================================================================
+Assumptions made where the prompts did not settle the point
+==============================================================================
+
+ 1. Merge gap is idle time: next run start minus (previous run's last row + 5 min).
+    Two runs are merged when that idle time is <= 30 min.
+ 2. 'Before start' windows are half-open [start - N, start): the start row is
+    excluded from the bolus/carb sums, min_prev2h, mins_below4_prev24h and
+    suspend_frac_prev60. bolus_iob_u and est_basal_iob_u are read from the
+    start row itself (they are state at that moment).
+ 3. slope30 / slope15 are anchored on the row that supplied g0 (g0 minus the
+    reading 30/15 min before that row). If that earlier reading is missing the
+    slope is NaN, not interpolated.
+ 4. mins_since_bolus / mins_since_meal look back 24 h strictly before start and
+    return 1440 when nothing is found.
+ 5. 'The 2 h after end' = rows in (end, end + 120]; 'end + 2 h to end + 12 h' =
+    rows in (end + 120, end + 720]. Rows past the end of the data (or into the
+    April gap) are simply absent; for outcome_missing_frac they count as
+    missing against the expected row count, for low_late they are ignored.
+ 6. window 3 ([date] - [date]) starts immediately after window 2, so the
+    prospective split and the window-2/3 boundary coincide and no session
+    can be merged across it.
+ 7. hrs_since_prev_session is computed across the April gap as a real elapsed
+    time (the first session of window 2 gets ~17 days x 24 h).
+ 8. hr_mean_session is the unweighted mean of the 5-min hr_mean values that
+    are present; sessions with no HR at all get NaN.
+ 9. dow uses the dataset's own column at the start row ([weekday] = 0).
+10. Two rows carry a workout_cat with workout_min == 0; per rule 1 they are
+    not part of any run.
+11. n_parts counts grid runs merged, as specified, but build_dataset.py has
+    already fused watch workouts that were split seconds apart, so n_parts is
+    1 everywhere. n_workouts (from processed/workouts_clean.csv) counts the
+    raw same-category watch workouts overlapping the session instead.
+12. flag_in_span, flag_reason, rows_missing_in_span and usable_v1 are kept in
+    sessions.csv as diagnostics. flag_reason still names pod_change when it
+    occurs, but pod_change no longer affects usable.
+13. cat2 uses the calendar date of the session start only ([date] - [date]
+    inclusive = indoor), with no check against duration or venue.
+14. meal_band and prevlow_band boundaries are inclusive at the upper edge as
+    written in prompt 02 (e.g. 120 -> 0-2h, 121 -> 2-4h; 30 -> 1-30).
+
+
+##### build_controls.py report #####
+Wrote [path]: 267 control windows for 89 sessions
+
+==============================================================================
+1. Usable sessions v1 -> v2, and v2 outcomes (explore)
+==============================================================================
+usable v1 (pod_change excluded sessions): 78 of 93
+usable v2 (pod_change ignored)          : 89 of 93   restored: 11
+restored sessions: [id], [id], [id], [id], [id], [id], [id], [id], [id], [id], [id]
+
+usable v2 by cat2:
+window            1   2  All
+cat2                        
+cricket_indoor   14   0   14
+cricket_outdoor   0  15   15
+football          7   1    8
+gym              40  12   52
+All              61  28   89
+
+Outcomes, n usable = 89
+  low_during  :  19  (21.3%)   wilson95 [0.141, 0.310]
+  low_post2h  :  29  (32.6%)   wilson95 [0.237, 0.429]
+  low_any     :  39  (43.8%)   wilson95 [0.340, 0.542]
+  low_late    :  54  (60.7%)   wilson95 [0.503, 0.702]
+  below3_any  :  12  (13.5%)   wilson95 [0.079, 0.221]
+
+==============================================================================
+2. low_any by cat2 / meal_band / prevlow_band / activity_at_start (usable explore)
+==============================================================================
+
+by cat2
+           cat2  n  k  rate  wilson_lo  wilson_hi
+ cricket_indoor 14  7 0.500      0.268      0.732
+cricket_outdoor 15  6 0.400      0.198      0.643
+       football  8  5 0.625      0.306      0.863
+            gym 52 21 0.404      0.282      0.539
+
+by meal_band
+meal_band  n  k  rate  wilson_lo  wilson_hi
+     0-2h 27 12 0.444      0.276      0.627
+     2-4h 25 16 0.640      0.445      0.798
+     4-6h  3  0 0.000      0.000      0.562
+      6h+ 34 11 0.324      0.191      0.492
+
+by prevlow_band
+prevlow_band  n  k  rate  wilson_lo  wilson_hi
+        1-30 17  4 0.235      0.096      0.473
+       31-90 31 14 0.452      0.292      0.622
+         90+ 21 12 0.571      0.365      0.755
+        none 20  9 0.450      0.258      0.658
+
+by activity_at_start
+ activity_at_start  n  k  rate  wilson_lo  wilson_hi
+                 0 68 30 0.441      0.329      0.559
+                 1 21  9 0.429      0.245      0.635
+
+==============================================================================
+3. meal_band by cat2 (usable explore session counts)
+==============================================================================
+meal_band        0-2h  2-4h  4-6h  6h+  All
+cat2                                       
+cricket_indoor      9     5     0    0   14
+cricket_outdoor     7     7     1    0   15
+football            3     5     0    0    8
+gym                 8     8     2   34   52
+All                27    25     3   34   89
+
+==============================================================================
+4. Controls found
+==============================================================================
+sessions by number of controls:
+n_controls
+3    89
+total control windows: 267   distinct control dates: 69
+days_from_session: median |d| = 4, max |d| = 22
+
+sessions with 0 controls:
+  none
+
+controls per session by cat2 (mean):
+cat2
+cricket_indoor     3.0
+cricket_outdoor    3.0
+football           3.0
+gym                3.0
+
+==============================================================================
+5. Baseline comparison: session rate vs matched-control rate (sessions with >= 1 control)
+==============================================================================
+sessions with >= 1 control: 89 of 89
+control rate = mean over sessions of (mean over that session's controls);
+bootstrap: resample sessions, 2000 draws, seed 20260921
+
+low_any      n= 89  session 0.438  control 0.397  ratio 1.10  boot95% [0.82, 1.43]
+low_late     n= 89  session 0.607  control 0.637  ratio 0.95  boot95% [0.77, 1.14]
+below3_any   n= 89  session 0.135  control 0.086  ratio 1.57  boot95% [0.72, 3.19]
+
+low_any by cat2:
+  cricket_indoor   n= 14  session 0.500  control 0.429  ratio 1.17  boot95% [0.60, 2.00]
+  cricket_outdoor  n= 15  session 0.400  control 0.356  ratio 1.12  boot95% [0.39, 2.57]
+  football         n=  8  session 0.625  control 0.167  ratio 3.75  boot95% [1.80, 10.50]  (4 draws with control rate 0 dropped)
+  gym              n= 52  session 0.404  control 0.436  ratio 0.93  boot95% [0.63, 1.26]
+
+raw control-window pooled rates (every control counted once, for reference):
+  low_any    : 106 / 267  (0.397)  wilson95 [0.340, 0.457]
+  low_late   : 170 / 267  (0.637)  wilson95 [0.577, 0.692]
+  below3_any :  23 / 267  (0.086)  wilson95 [0.058, 0.126]
+
+==============================================================================
+6. Meal timing without exercise: low_any by meal_band, controls vs sessions
+==============================================================================
+          control                                session                               
+                n   k   rate wilson_lo wilson_hi       n   k   rate wilson_lo wilson_hi
+meal_band                                                                              
+0-2h          171  62  0.363     0.294     0.437      27  12  0.444     0.276     0.627
+2-4h           34  16  0.471     0.315     0.633      25  16  0.640     0.445     0.798
+4-6h           11   8  0.727     0.434     0.903       3   0  0.000     0.000     0.562
+6h+            51  20  0.392     0.270     0.529      34  11  0.324     0.191     0.492
+
+(control rows: each control window counted once, by its own meal_band;
+ session rows: usable explore sessions, by the session's meal_band)
+
+==============================================================================
+7. long_uncovered sessions and doubtful cat2
+==============================================================================
+example rows withheld (they carry timestamps)
+
+==============================================================================
+8. Assumptions made where prompt 02 did not settle the point
+==============================================================================
+
+ 1. Control 'end' = control start + (session end - session start), so the
+    control has the same number of rows as the session; its outcome span is
+    start..end+2h exactly as for sessions.
+ 2. 'Entirely on or before [date]' is applied to control end + 2 h
+    (the whole outcome span), not just the control start.
+ 3. The exercise-free check uses every session in sessions.csv (all three
+    cats, usable or not, any split) against [control start - 24 h, control
+    end + 2 h]. Walking is not a session and so is not excluded.
+ 4. Candidate dates are ordered by |days| then by sign (earlier date first
+    on ties), and the first 3 that pass every check are kept.
+ 5. Same data window is checked at both the control start and the control
+    end + 2 h rows.
+ 6. Bootstrap ratio: sessions are resampled with replacement; a draw whose
+    control rate is 0 gives an infinite ratio and is dropped from the
+    percentile interval (the count of such draws is printed).
+ 7. The per-cat2 comparison uses the same 2,000-draw bootstrap per group,
+    with the same generator continued (seeded once at the top).
+ 8. Doubtful cat2 in part 7 lists indoor-season cricket > 120 min (as the
+    prompt suggests) and, as an extra, outdoor-season cricket <= 90 min.
+ 9. Part 6 session rates use all usable explore sessions, not only those
+    with a control, so they match part 2.
+10. Control features are computed with the same compute_features() as
+    sessions, so hr_mean_session / steps_session etc. exist but are not
+    written; only the requested columns plus outcome_missing_frac, usable,
+    window, cat2, start, end and duration_min are kept.
+

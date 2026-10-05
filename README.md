@@ -71,7 +71,7 @@ The design and the prompts were written in a Claude chat. Each numbered prompt w
 
 ## Academic context
 
-This is a personal project alongside the MA in AI at the University of Southampton. The Module 1 proposal set the question (link placeholder: `docs/module1_proposal.pdf`, to be added by the author or not). The Module 4 report reviewed Martinsson et al. (2020), a glucose forecaster with a variance estimate, and Cuya (2025), the winning tabular model of the BrisT1D challenge; the forecaster here follows the second and checks its band the way the first argued for.
+This is a personal project alongside the MA in AI at the University of Southampton. The Module 1 proposal set the question (two-page summary: [docs/module1_proposal.pdf](docs/module1_proposal.pdf)). The Module 4 report reviewed Martinsson et al. (2020), a glucose forecaster with a variance estimate, and Cuya (2025), the winning tabular model of the BrisT1D challenge; the forecaster here follows the second and checks its band the way the first argued for.
 
 ## Running the code
 
